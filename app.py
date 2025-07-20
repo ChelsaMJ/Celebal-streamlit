@@ -34,7 +34,7 @@ def train_model(X, y):
     return model
 
 def main():
-    st.title("🚗 Car Price Predictor App")
+    st.title("Car Price Predictor App")
     st.markdown("Estimate car price based on specifications using a trained machine learning model.")
 
     df = load_data()
@@ -67,7 +67,7 @@ def main():
         prediction = model.predict(input_data)[0]
         st.success(f"Estimated Car Price: ${int(prediction):,}")
 
-        st.subheader("🔍 Feature Importance")
+        st.subheader("Feature Importance")
         importance = pd.Series(model.feature_importances_, index=X.columns)
         fig, ax = plt.subplots()
         importance.sort_values().plot(kind='barh', color='teal', ax=ax)
