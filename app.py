@@ -1,45 +1,77 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-import plotly.express as px
+from sklearn.preprocessing import LabelEncoder
 
-# Generate synthetic data
-def generate_house_data(n_samples=100):
-    np.random.seed(42)
-    size = np.random.normal(1500, 500, n_samples)
-    price = size * 100 + np.random.normal(0, 10000, n_samples)
-    return pd.DataFrame({'size_sqft': size, 'price': price})
+@st.cache_data
+def load_data():
+    df = pd.read_csv("CarPrice.csv")
+    return df
 
-# Train linear regression model
-def train_model():
-    df = generate_house_data()
-    X = df[['size_sqft']]
+def preprocess_data(df):
+    features = ['fueltype', 'aspiration', 'carbody', 'drivewheel', 'enginesize', 'horsepower', 'citympg', 'highwaympg']
+    df = df[features + ['price']].dropna()
+    
+    label_cols = ['fueltype', 'aspiration', 'carbody', 'drivewheel']
+    encoders = {}
+    
+    for col in label_cols:
+        le = LabelEncoder()
+        df[col] = le.fit_transform(df[col])
+        encoders[col] = le
+    
+    X = df.drop('price', axis=1)
     y = df['price']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    model = LinearRegression()
-    model.fit(X_train, y_train)
+    return X, y, encoders
+
+@st.cache_resource
+def train_model(X, y):
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model.fit(X, y)
     return model
 
-# Streamlit UI
 def main():
-    st.title('🏠 House Price Predictor')
-    st.write("Enter the size of the house to estimate its price:")
+    st.title("🚗 Car Price Predictor App")
+    st.markdown("Estimate car price based on specifications using a trained machine learning model.")
 
-    model = train_model()
+    df = load_data()
+    X, y, encoders = preprocess_data(df)
+    model = train_model(X, y)
 
-    size = st.number_input('House Size (sqft)', min_value=500, max_value=5000, value=1500)
+    st.sidebar.header("Enter Car Features")
 
-    if st.button('Predict Price'):
-        prediction = model.predict([[size]])
-        st.success(f'Estimated Price: ${prediction[0]:,.2f}')
+    fueltype = st.sidebar.selectbox("Fuel Type", encoders['fueltype'].classes_)
+    aspiration = st.sidebar.selectbox("Aspiration", encoders['aspiration'].classes_)
+    carbody = st.sidebar.selectbox("Car Body", encoders['carbody'].classes_)
+    drivewheel = st.sidebar.selectbox("Drive Wheel", encoders['drivewheel'].classes_)
+    enginesize = st.sidebar.slider("Engine Size", 50, 400, 150)
+    horsepower = st.sidebar.slider("Horsepower", 50, 300, 100)
+    citympg = st.sidebar.slider("City MPG", 5, 60, 25)
+    highwaympg = st.sidebar.slider("Highway MPG", 5, 60, 30)
 
-        df = generate_house_data()
-        fig = px.scatter(df, x='size_sqft', y='price', title='House Size vs Price')
-        fig.add_scatter(x=[size], y=[prediction[0]], mode='markers',
-                        marker=dict(color='red', size=12), name='Prediction')
-        st.plotly_chart(fig)
+    input_data = pd.DataFrame([{
+        'fueltype': encoders['fueltype'].transform([fueltype])[0],
+        'aspiration': encoders['aspiration'].transform([aspiration])[0],
+        'carbody': encoders['carbody'].transform([carbody])[0],
+        'drivewheel': encoders['drivewheel'].transform([drivewheel])[0],
+        'enginesize': enginesize,
+        'horsepower': horsepower,
+        'citympg': citympg,
+        'highwaympg': highwaympg
+    }])
 
-if __name__ == '__main__':
+    if st.button("Predict Price"):
+        prediction = model.predict(input_data)[0]
+        st.success(f"Estimated Car Price: ${int(prediction):,}")
+
+        st.subheader("🔍 Feature Importance")
+        importance = pd.Series(model.feature_importances_, index=X.columns)
+        fig, ax = plt.subplots()
+        importance.sort_values().plot(kind='barh', color='teal', ax=ax)
+        st.pyplot(fig)
+
+if __name__ == "__main__":
     main()
