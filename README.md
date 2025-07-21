@@ -1,6 +1,7 @@
 # Car Price Predictor App
+#### Week 7 - Deploying Machine Learning Models with Streamlit
 
-Link to view the working Streamlit app: https://celebal-app-ka8vn2motzp8rnmkxkngaj.streamlit.app/
+**Link to view the working Streamlit app: https://celebal-app-ka8vn2motzp8rnmkxkngaj.streamlit.app/**
 
 This is a Streamlit web application that predicts the price of a car based on its specifications using a trained Random Forest Regressor model. The app allows users to input car features like fuel type, horsepower, mileage, and more, and returns an estimated car price.
 
