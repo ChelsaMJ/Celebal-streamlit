@@ -16,8 +16,6 @@ This is a Streamlit web application that predicts the price of a car based on it
 
 ---
 
----
-
 ## ML Model Details
 
 - **Model**: Random Forest Regressor (`sklearn`)
