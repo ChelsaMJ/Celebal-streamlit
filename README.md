@@ -1,5 +1,5 @@
 # Car Price Predictor App
-#### Week 7 - Deploying Machine Learning Models with Streamlit
+### _Week 7 - Deploying Machine Learning Models with Streamlit_
 
 **Link to view the working Streamlit app: https://celebal-app-ka8vn2motzp8rnmkxkngaj.streamlit.app/**
 
